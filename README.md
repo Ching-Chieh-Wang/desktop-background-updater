@@ -1,5 +1,6 @@
+
 # desktop-background-updater
-a program that automatically downloads Bing images online and changes the desktop image according to a user-defined time interval  
+a program that automatically downloads Bing images online and changes the desktop image according to a user-defined time interval. Works well using WIN10. Might work using WIN11. Haven't been tested on MAC_OS. 
 
 An interface that allows you to change the desktop image. To open the interface, open the toolbox-> right click the desktop background updater icon->click "設定Setting"
 ![image](https://github.com/Ching-Chieh-Wang/desktop-background-updater/assets/81002444/2eaf3d5d-0e01-4daa-801e-3fdfb54d0279)
