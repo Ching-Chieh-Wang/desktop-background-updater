@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication,QToolBar, QMainWindow,QSystemTrayIcon,QAction,QMenu,qApp,QMessageBox,QPushButton
+from PyQt5.QtWidgets import QApplication,QToolBar,QMessageBox, QMainWindow,QSystemTrayIcon,QAction,QMenu,qApp,QMessageBox,QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication ,QRect,pyqtSignal,QTimer
 from PyQt5 import QtCore
@@ -34,33 +34,51 @@ class BackgroundUpdateModel:
             json.dump(params,f)
         self.startCountDown()
     def nextImg(self):
-        self.nowImgHistoriesId+=1 
         import random as rd
-        if self.nowImgHistoriesId==len(self.imgIdHistories):
-            web = requests.get(r"https://peapix.com/bing", cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
-            soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
-            newestPath=soup.find_all('a',class_="image-list__picture-link")
-            self.imgIdHistories.append(str(rd.randint(37160,int(newestPath[0].get('href').split('/')[-1]))))    
-        self.setImg()
+        if self.nowImgHistoriesId==len(self.imgIdHistories)-1:
+            try:
+                web = requests.get(r"https://peapix.com/bing", cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
+                soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
+                newestPath=soup.find_all('a',class_="image-list__picture-link")
+                self.imgIdHistories.append(str(rd.randint(37160,int(newestPath[0].get('href').split('/')[-1]))))    
+            except:
+                return False
+        self.nowImgHistoriesId+=1 
+        success= self.setImg()
+        if not success:
+            self.nowImgHistoriesId-=1
+            return False
+        return True
     def previousImg(self):
-        print(self.imgIdHistories)
         self.nowImgHistoriesId-=1
-        self.setImg()
+        success =self.setImg()
+        if not success :
+            self.nowImgHistoriesId+=1
+            return False
+        return True
     def setImg(self):
         self.terminate()
         path = os.getcwd()+'/background.jpg'
-        web = requests.get(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId], cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
-        soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
-        downloadBtns=soup.find_all('a',class_="w-100")
-        jpg = requests.get(downloadBtns[0].get('href'))     # 使用 requests 讀取圖片網址，取得圖片編碼
+        try:
+            web = requests.get(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId], cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
+            soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
+            downloadBtns=soup.find_all('a',class_="w-100")
+            jpg = requests.get(downloadBtns[0].get('href'))     # 使用 requests 讀取圖片網址，取得圖片編碼
+        except:
+            return False
         f = open(path, 'wb')    # 使用 open 設定以二進位格式寫入圖片檔案
         f.write(jpg.content)   # 寫入圖片的 content
         f.close()    
         ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 3)
         self.startCountDown()
+        return True
     def imgInfo(self):
-        import webbrowser    
-        webbrowser.get('windows-default').open_new(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId])
+        import webbrowser 
+        try:
+            webbrowser.get('windows-default').open_new(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId])
+        except:
+            return False
+        return True
     def startCountDown(self):
         self.timer.start(self.hoursInterval*3600000+self.minutesInterval*60000)
     def terminate(self):
@@ -139,6 +157,8 @@ class BackgroundUpdateView(QMainWindow):
         self.splitter_2.hide()
     def adjustIntervalCancel(self):
         self.splitter_2.hide()
+    def loadImgError(self):
+        QMessageBox.information(self,'Load image error','Check Internet connection')
         
         
 
@@ -160,16 +180,26 @@ class BackgroundUpdateController:
         self.view.adjustIntervalBtn.clicked.connect(self.adjustInterval)
         self.view.updateIntervalOKBtn.clicked.connect(self.adjustIntervalOK)
         self.view.updateIntervalCancelBtn.clicked.connect(self.adjustIntervalCancel)
-        self.view.imgInfoBtn.clicked.connect(self.model.imgInfo)
+        self.view.imgInfoBtn.clicked.connect(self.imgInfo)
         return sys.exit(app.exec_())    
+    def imgInfo(self):
+        success=self.model.imgInfo()
+        if not success:
+            self.view.loadImgError()
     def previousImg(self):
-        self.model.previousImg()
-        if self.model.nowImgHistoriesId<=0:
-            self.view.previousImgBtn.setDisabled(True)
+        success=self.model.previousImg()
+        if not success:
+            self.view.loadImgError()
+        else:
+            if self.model.nowImgHistoriesId<=0:
+                self.view.previousImgBtn.setDisabled(True)
         
     def nextImg(self):
-        self.model.nextImg()
-        self.hasPreviousImg()
+        success=self.model.nextImg()
+        if not success: 
+            self.view.loadImgError()
+        else :
+            self.hasPreviousImg()
     def hasPreviousImg(self):
         self.view.previousImgBtn.setDisabled(False)
     def terminate(self):
