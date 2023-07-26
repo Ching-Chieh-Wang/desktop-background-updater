@@ -130,6 +130,7 @@ class BackgroundUpdateView(QMainWindow):
         self.nextImgBtn.setObjectName("nextImgBtn")
         self.hoursLbl.setText( "Hours")
         self.minutesLbl.setText( "Minutes")
+        self.minutesSpin.valueChanged.connect(self.adjustingInterval)
         self.updateIntervalOKBtn.setText( "OK")
         self.updateIntervalCancelBtn.setText( "Cancel")
         self.exitBtn.setText( "Exit")
@@ -149,6 +150,19 @@ class BackgroundUpdateView(QMainWindow):
     def terminate(self):
         self.hide()
         self.tray.setVisible(False)
+    def adjustingInterval(self):
+        if self.hoursSpin.value()==0:
+            if self.minutesSpin.value()==0:
+                self.minutesSpin.setValue(1)
+            self.minutesSpin.setMinimum(1)
+        else:
+            self.minutesSpin.setMinimum(0)
+        if self.minutesSpin.value()==0:
+            if self.hoursSpin.value()==0:
+                self.hoursSpin.setValue(1)
+            self.hoursSpin.setMinimum(1)
+        else:
+            self.hoursSpin.setMinimum(0)
     def adjustInterval(self,initalHoursInterval,initalMinutesInterval):
         self.splitter_2.show()
         self.hoursSpin.setValue(initalHoursInterval)
