@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 import os
 import json
 
-class BackgroundUpdateModel:
+class WallpaperUpdateModel:
     def __init__(self):
         self.timer=QTimer()
         self.timer.timeout.connect(self.nextImg)
@@ -23,7 +23,6 @@ class BackgroundUpdateModel:
                 self.minutesInterval=paramsParser['minutesInterval']
         except:
             self.adjustIntervalOK(1,0)
-        self.nextImg()
     def adjustIntervalOK(self,hoursInterval,minutesInterval):
         self.terminate()
         self.hoursInterval=hoursInterval
@@ -58,7 +57,7 @@ class BackgroundUpdateModel:
         return True
     def setImg(self):
         self.terminate()
-        path = os.getcwd()+'/background.jpg'
+        path = os.getcwd()+'/wallpaper.jpg'
         try:
             web = requests.get(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId], cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
             soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
@@ -88,11 +87,11 @@ class BackgroundUpdateModel:
             
             
             
-class BackgroundUpdateView(QMainWindow):
+class WallpaperUpdateView(QMainWindow):
     def __init__(self):
-        super(BackgroundUpdateView,self).__init__()
-        self.setWindowTitle("Background updater")
-        self.setWindowIcon(QIcon("backgroundupdate.ico"))
+        super(WallpaperUpdateView,self).__init__()
+        self.setWindowTitle("Desktop wallpaper updater")
+        self.setWindowIcon(QIcon("desktop_wallpaper_update.ico"))
         self.resize(1031,154)
         self.splitter_2 = QtWidgets.QSplitter(self)
         self.splitter_2.setGeometry(QtCore.QRect(200, 30, 581, 31))
@@ -136,10 +135,11 @@ class BackgroundUpdateView(QMainWindow):
         self.exitBtn.setText( "Exit")
         self.adjustIntervalBtn.setText( "Adjust Interval")
         self.imgInfoBtn.setText( "Image Info")
+        self.imgInfoBtn.setDisabled(True)
         self.previousImgBtn.setText( "Previous Image")
         self.nextImgBtn.setText( "Next Image")
         self.tray = QSystemTrayIcon(self)
-        self.tray.setIcon(QIcon('backgroundupdate.ico'))
+        self.tray.setIcon(QIcon('desktop_wallpaper_update.ico'))
         self.showGUIAct = QAction('設定')
         self.exitAct =  QAction('退出')
         trayMenu = QMenu()
@@ -179,13 +179,13 @@ class BackgroundUpdateView(QMainWindow):
 
         
 
-class BackgroundUpdateController:
+class WallpaperUpdateController:
     def __init__(self):
         app = QApplication(sys.argv)
         QApplication.setQuitOnLastWindowClosed(False)
-        self.model=BackgroundUpdateModel()
-        self.model.timer.timeout.connect(self.hasPreviousImg)
-        self.view=BackgroundUpdateView()
+        self.model=WallpaperUpdateModel()
+        self.model.timer.timeout.connect(self.nextImg)
+        self.view=WallpaperUpdateView()
         self.view.nextImgBtn.clicked.connect(self.nextImg)
         self.view.previousImgBtn.clicked.connect(self.previousImg)
         self.view.showGUIAct.triggered.connect(self.view.show)
@@ -195,6 +195,8 @@ class BackgroundUpdateController:
         self.view.updateIntervalOKBtn.clicked.connect(self.adjustIntervalOK)
         self.view.updateIntervalCancelBtn.clicked.connect(self.adjustIntervalCancel)
         self.view.imgInfoBtn.clicked.connect(self.imgInfo)
+        self.view.show()
+        self.nextImg()
         return sys.exit(app.exec_())    
     def imgInfo(self):
         success=self.model.imgInfo()
@@ -210,12 +212,14 @@ class BackgroundUpdateController:
         
     def nextImg(self):
         success=self.model.nextImg()
-        if not success: 
+        if success:
+            self.view.imgInfoBtn.setDisabled(False)
+            if len(self.model.imgIdHistories)>1:
+                self.view.previousImgBtn.setDisabled(False)
+        else:
             self.view.loadImgError()
-        else :
-            self.hasPreviousImg()
-    def hasPreviousImg(self):
-        self.view.previousImgBtn.setDisabled(False)
+
+
     def terminate(self):
         self.view.terminate()
         self.model.terminate()
@@ -232,9 +236,4 @@ class BackgroundUpdateController:
         
 
 if __name__ == '__main__':
-    backgroundUpdater=BackgroundUpdateController()
-    
-    
-
-
-
+    wallpaperUpdater=WallpaperUpdateController()
