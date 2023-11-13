@@ -1,3 +1,7 @@
+# Important update (Under maintainance): 
+
+### The wallpaper download website has canceld its wallpaper download service, looking for other sources!!
+
 # Desktop Wallpaper Updater
 
 Desktop Wallpaper Updater is a simple and lightweight application that allows you to automatically change your desktop wallpaper at specified time intervals. It also provides convenient links to learn more about the images displayed as your wallpaper. With no ads and no program kidnapping, you can enjoy a seamless and uninterrupted experience.
