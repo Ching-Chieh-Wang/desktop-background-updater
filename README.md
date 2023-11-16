@@ -1,6 +1,3 @@
-# Important update (Under maintainance): 
-
-### The wallpaper download website has canceld its wallpaper download service, looking for other sources!!
 
 # Desktop Wallpaper Updater
 
