@@ -42,7 +42,7 @@ class WallpaperUpdateModel:
                soup = BeautifulSoup(response.text, 'html.parser')
                download_links = soup.find_all('a')
                image=rd.choice(download_links)
-               self.imgs.append([image['href'][2:-2],image.text])
+               self.imgs.append([image['href'][2:-2],image.text.split('(©')[0]])
             except:
                 return False
         self.nowImgIdx+=1 
@@ -208,7 +208,7 @@ class WallpaperUpdateController:
         if not success:
             self.view.loadImgError()
         else:
-            if self.model.nowImgId<=0:
+            if self.model.nowImgIdx<=0:
                 self.view.previousImgBtn.setDisabled(True)
         
     def nextImg(self):
