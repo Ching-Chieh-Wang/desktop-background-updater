@@ -7,6 +7,8 @@ from PyQt5 import QtCore
 import ctypes
 import requests
 from bs4 import BeautifulSoup
+from googlesearch import search
+import random as rd
 import os
 import json
 
@@ -14,8 +16,8 @@ class WallpaperUpdateModel:
     def __init__(self):
         self.timer=QTimer()
         self.timer.timeout.connect(self.nextImg)
-        self.imgIdHistories=[]
-        self.nowImgHistoriesId=-1
+        self.imgs=[]
+        self.nowImgIdx=-1
         try:
             with open('params.json','r') as f:
                 paramsParser=json.load(f)
@@ -33,48 +35,47 @@ class WallpaperUpdateModel:
             json.dump(params,f)
         self.startCountDown()
     def nextImg(self):
-        import random as rd
-        if self.nowImgHistoriesId==len(self.imgIdHistories)-1:
+        if self.nowImgIdx==len(self.imgs)-1:
             try:
-                web = requests.get(r"https://peapix.com/bing", cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
-                soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
-                newestPath=soup.find_all('a',class_="image-list__picture-link")
-                self.imgIdHistories.append(str(rd.randint(37160,int(newestPath[0].get('href').split('/')[-1]))))    
+               url = "https://github.com/ameizi/bing-wallpaper/blob/main/bing-wallpaper.md"  
+               response = requests.get(url)
+               soup = BeautifulSoup(response.text, 'html.parser')
+               download_links = soup.find_all('a')
+               image=rd.choice(download_links)
+               self.imgs.append([image['href'][2:-2],image.text])
             except:
                 return False
-        self.nowImgHistoriesId+=1 
+        self.nowImgIdx+=1 
         success= self.setImg()
         if not success:
-            self.nowImgHistoriesId-=1
+            self.nowImgIdx-=1
             return False
         return True
     def previousImg(self):
-        self.nowImgHistoriesId-=1
+        self.nowImgIdx-=1
         success =self.setImg()
         if not success :
-            self.nowImgHistoriesId+=1
+            self.nowImgId+=1
             return False
         return True
     def setImg(self):
-        self.terminate()
         path = os.getcwd()+'/wallpaper.jpg'
+        self.terminate()
+        response = requests.get(self.imgs[self.nowImgIdx][0], cookies={'over18':'1'})
         try:
-            web = requests.get(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId], cookies={'over18':'1'})    # 傳送 Cookies 資訊後，抓取頁面內容
-            soup = BeautifulSoup(web.text, "html.parser")   # 使用 BeautifulSoup 取得網頁結構
-            downloadBtns=soup.find_all('a',class_="w-100")
-            jpg = requests.get(downloadBtns[0].get('href'))     # 使用 requests 讀取圖片網址，取得圖片編碼
+            with open(path, 'wb') as file:
+                file.write(response.content)
+            ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 3)
+            self.startCountDown()
+            return True
         except:
             return False
-        f = open(path, 'wb')    # 使用 open 設定以二進位格式寫入圖片檔案
-        f.write(jpg.content)   # 寫入圖片的 content
-        f.close()    
-        ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 3)
-        self.startCountDown()
-        return True
     def imgInfo(self):
         import webbrowser 
         try:
-            webbrowser.get('windows-default').open_new(r"https://peapix.com/bing/"+self.imgIdHistories[self.nowImgHistoriesId])
+            for infoUrl in search(self.imgs[self.nowImgIdx][1]+" site:peapix.com", stop=1,pause=0):
+                pass
+            webbrowser.get('windows-default').open_new(infoUrl)
         except:
             return False
         return True
@@ -140,8 +141,8 @@ class WallpaperUpdateView(QMainWindow):
         self.nextImgBtn.setText( "Next Image")
         self.tray = QSystemTrayIcon(self)
         self.tray.setIcon(QIcon('desktop_wallpaper_update.ico'))
-        self.showGUIAct = QAction('設定')
-        self.exitAct =  QAction('退出')
+        self.showGUIAct = QAction('Settings')
+        self.exitAct =  QAction('Exit')
         trayMenu = QMenu()
         trayMenu.addAction(self.showGUIAct)
         trayMenu.addAction(self.exitAct)
@@ -172,7 +173,8 @@ class WallpaperUpdateView(QMainWindow):
     def adjustIntervalCancel(self):
         self.splitter_2.hide()
     def loadImgError(self):
-        QMessageBox.information(self,'Load image error','Check Internet connection')
+        if self.isVisible():
+            QMessageBox.information(self,'Load image error','Check Internet connection')
         
         
 
@@ -195,7 +197,6 @@ class WallpaperUpdateController:
         self.view.updateIntervalOKBtn.clicked.connect(self.adjustIntervalOK)
         self.view.updateIntervalCancelBtn.clicked.connect(self.adjustIntervalCancel)
         self.view.imgInfoBtn.clicked.connect(self.imgInfo)
-        self.view.show()
         self.nextImg()
         return sys.exit(app.exec_())    
     def imgInfo(self):
@@ -207,14 +208,14 @@ class WallpaperUpdateController:
         if not success:
             self.view.loadImgError()
         else:
-            if self.model.nowImgHistoriesId<=0:
+            if self.model.nowImgId<=0:
                 self.view.previousImgBtn.setDisabled(True)
         
     def nextImg(self):
         success=self.model.nextImg()
         if success:
             self.view.imgInfoBtn.setDisabled(False)
-            if len(self.model.imgIdHistories)>1:
+            if len(self.model.imgs)>1:
                 self.view.previousImgBtn.setDisabled(False)
         else:
             self.view.loadImgError()
