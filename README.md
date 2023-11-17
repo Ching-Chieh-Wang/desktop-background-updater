@@ -23,6 +23,5 @@ Before:
 ![image](https://github.com/Ching-Chieh-Wang/desktop-background-updater/assets/81002444/eb15537a-adaf-4de5-b3c0-ff708b72154e)
 
 ## Install
-The desktop wallpaper update program download link: [https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb](https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb). Download the whole file (!!!"make sure to include desktop wallpaper update.ico"!!! and run
- desktop wallpaper update.exe)
+The desktop wallpaper update program download link: [https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb](https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb). Download the whole file (!!!"make sure to include desktop wallpaper update.ico"!!! and run desktop wallpaper update.exe). You can add a shortcut to "start" folder so that everytime your computer is booted, the program would automatically run. To open he "start" folder, you can press Start+r then type in shell:startup.
 
