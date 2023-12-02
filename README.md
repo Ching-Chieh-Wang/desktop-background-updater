@@ -24,6 +24,12 @@ Before:
 * Users can also set an interval, the desktop wallpaper would automatically change according to this interval
 ![image](https://github.com/Ching-Chieh-Wang/desktop-background-updater/assets/81002444/eb15537a-adaf-4de5-b3c0-ff708b72154e)
 
+## Libraries
+* PyQt5
+* requests
+* beautifulsoup4
+* google
+
 ## Install
 The desktop wallpaper update program download link: [https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb](https://drive.google.com/drive/folders/1biNY_pAxhPwV-TLC3aMmbciZW4_d9mqb). Download the whole file (!!!"make sure to include desktop wallpaper update.ico"!!! and run desktop wallpaper update.exe). 
 
