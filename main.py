@@ -8,6 +8,7 @@ import ctypes
 import requests
 from bs4 import BeautifulSoup
 from googlesearch import search
+import webbrowser 
 import random as rd
 import os
 import json
@@ -71,10 +72,9 @@ class WallpaperUpdateModel:
         except:
             return False
     def imgInfo(self):
-        import webbrowser 
         try:
             for infoUrl in search(self.imgs[self.nowImgIdx][1]+" site:peapix.com", stop=1,pause=0):
-                pass
+                break
             webbrowser.get('windows-default').open_new(infoUrl)
         except:
             return False
@@ -92,7 +92,11 @@ class WallpaperUpdateView(QMainWindow):
     def __init__(self):
         super(WallpaperUpdateView,self).__init__()
         self.setWindowTitle("Desktop wallpaper updater")
-        self.setWindowIcon(QIcon("desktop_wallpaper_update.ico"))
+        if os.path.isfile("desktop_wallpaper_update.ico"):
+            icon=QIcon("desktop_wallpaper_update.ico")
+        else:
+            icon=QApplication.style().standardIcon(40)
+        self.setWindowIcon(icon)
         self.resize(1031,154)
         self.splitter_2 = QtWidgets.QSplitter(self)
         self.splitter_2.setGeometry(QtCore.QRect(200, 30, 581, 31))
@@ -140,7 +144,7 @@ class WallpaperUpdateView(QMainWindow):
         self.previousImgBtn.setText( "Previous Image")
         self.nextImgBtn.setText( "Next Image")
         self.tray = QSystemTrayIcon(self)
-        self.tray.setIcon(QIcon('desktop_wallpaper_update.ico'))
+        self.tray.setIcon(icon)
         self.showGUIAct = QAction('Settings')
         self.exitAct =  QAction('Exit')
         trayMenu = QMenu()
